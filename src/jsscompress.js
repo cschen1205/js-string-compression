@@ -184,8 +184,11 @@ var jsscompress = jsscompress || {};
         
         var cc = 0;
         for(var i = 0; i < 8; ++i) {
-            if(bitStream.isEmpty()) return cc;
-            cc = cc * 2 + bitStream.dequeue();
+            var bit = 0;
+            if(!bitStream.isEmpty()) {
+                bit = bitStream.dequeue();
+            }
+            cc = cc * 2 + bit;
         }  
         return cc;
     };
@@ -316,6 +319,15 @@ var jsscompress = jsscompress || {};
         }
         return text;
     };
+    
+    Hauffman.prototype.decompress = function(compressed) {
+        var bitStream = new jss.Queue();
+        for(var i=0; i < compressed.length; ++i){
+            var cc = compressed.charCodeAt(i);
+            this.writeChar(cc, bitStream);
+        }
+        return this.decompressFromBinary(bitStream);
+    }
     
     jss.Hauffman = Hauffman;
 

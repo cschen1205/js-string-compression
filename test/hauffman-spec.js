@@ -30,5 +30,10 @@ describe("Hauffman algorithm", function(){
        
        var compressed = hm.compress(text);
        console.log(compressed);
+       
+       var decompressed = hm.decompress(compressed);
+       console.log(decompressed);
+       
+       expect(decompressed).to.equal(text);
    }); 
 });
