@@ -1,7 +1,7 @@
 {
   "name": "js-string-compression",
-  "version": "1.0.1",
-  "description": "Package implements compression algorithms",
+  "version": "1.0.2",
+  "description": "Package implements string compression algorithms",
   "author": "Caishun Chen",
   "contributors": [
     "Caishun Chen <cschen1205@gmail.com>"
