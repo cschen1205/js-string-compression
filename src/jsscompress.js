@@ -31,7 +31,7 @@ var jsscompress = jsscompress || {};
         return this.left == null && this.right == null;
     };
     
-    jss.HauffNode = Hauffman;
+    jss.HauffNode = HauffNode;
     var Hauffman = function(){
         this.root = null;
     };
@@ -190,11 +190,17 @@ var jsscompress = jsscompress || {};
     };
     
     Hauffman.prototype.writeChar = function(cc, bitStream) {
+        var temp = [];
         for(var i = 0; i < 8; ++i) {
             var bit = cc % 2;
-            bitStream.enqueue(bit);
+            temp.push(bit);
             cc = Math.floor(cc / 2);
         }  
+        
+        for(var i = 7; i >= 0; --i){
+            var bit = temp[i];
+            bitStream.enqueue(bit);
+        }
     };
     
     Hauffman.prototype.writeTrie = function(x, bitStream) {
@@ -207,6 +213,55 @@ var jsscompress = jsscompress || {};
         this.writeTrie(x.left, bitStream);
         this.writeTrie(x.right, bitStream);
     };  
+    
+    Hauffman.prototype.buildTrie = function(text) {
+        var freq = {};
+        for(var i = 0; i < text.length; ++i){
+            var cc = text.charCodeAt(i);
+            if(cc in freq) {
+                freq[cc] += 1;
+            } else {
+                freq[cc] = 1;
+            }
+        }  
+        
+        var pq = new jss.MinPQ(function(node1, node2){
+            return node1.freq - node2.freq; 
+        });
+        for(var cc in freq) {
+            var count = freq[cc];
+            var node = new jss.HauffNode({
+                freq: count,
+                key: cc
+            });
+            pq.enqueue(node);
+        }
+        
+        while(pq.size() > 1) {
+            var node1 = pq.delMin();
+            var node2 = pq.delMin();
+            var new_node = new jss.HauffNode({
+                left: node1,
+                right: node2,
+                freq: node1.freq + node2.freq
+            });
+            pq.enqueue(new_node);
+        }
+        return pq.delMin();
+    };
+    
+    Hauffman.prototype.buildCode = function(x, s, code) {
+        if(x == null) {
+            return;
+        }
+        
+        if(x.isLeaf()){
+            code[x.key] = s;
+            return;
+        } 
+        this.buildCode(x.left, s + "0", code);
+        this.buildCode(x.right, s + "1", code);
+    };
     
     jss.Hauffman = Hauffman;
 
