@@ -15,14 +15,14 @@ var jsscompress = jsscompress || {};
         if(!config.key) {
             config.key = 0;
         }
-        if(!config.value) {
-            config.value = null;
-        }
         this.left = config.left;
         this.right = config.right;
         this.freq = config.freq;
         this.key = config.key;
-        this.value = config.value;
+    };
+    
+    HauffNode.prototype.isLeaf = function(){
+        return this.left == null && this.right == null;
     };
     
     jss.HauffNode = Hauffman;
@@ -80,8 +80,47 @@ var jsscompress = jsscompress || {};
     jss.Queue = Queue;
     
     Hauffman.prototype.readTrie = function(bitStream) {
-        
+        var bit = bitStream.dequeue();
+        if(bit == 1){
+            return new jss.HauffNode({
+                key: this.readChar(bitStream)
+            });
+        }
+        var left = this.readTrie(bitStream);
+        var right = this.readTrie(bitStream);
+        return new jss.HauffNode({
+            left : left,
+            right : right
+        });
     };
+    
+    Hauffman.prototype.readChar = function(bitStream) {
+        
+        var cc = 0;
+        for(var i = 0; i < 8; ++i) {
+            cc = cc * 2 + bitStream.dequeue();
+        }  
+        return cc;
+    };
+    
+    Hauffman.prototype.writeChar = function(cc, bitStream) {
+        for(var i = 0; i < 8; ++i) {
+            var bit = cc % 2;
+            bitStream.enqueue(bit);
+            cc = Math.floor(cc / 2);
+        }  
+    };
+    
+    Hauffman.prototype.writeTrie = function(x, bitStream) {
+        if(x.isLeaf()){
+            bitStream.enqueue(1);
+            this.writeChar(x.key, bitStream);
+            return;
+        }
+        bitStream.enqueue(0);
+        this.writeTrie(x.left, bitStream);
+        this.writeTrie(x.right, bitStream);
+    };  
     
     jss.Hauffman = Hauffman;
 
