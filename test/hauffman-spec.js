@@ -22,6 +22,13 @@ describe("Hauffman algorithm", function(){
            expect(code[cc]).to.equal(code2[cc]);
        }
        
-       bitStream = hm.compress(text);
+       bitStream = hm.compressToBinary(text);
+       
+       var text2 = hm.decompressFromBinary(bitStream);
+       console.log(text2);
+       expect(text2).to.equal(text);
+       
+       var compressed = hm.compress(text);
+       console.log(compressed);
    }); 
 });

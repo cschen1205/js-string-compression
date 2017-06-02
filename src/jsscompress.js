@@ -184,6 +184,7 @@ var jsscompress = jsscompress || {};
         
         var cc = 0;
         for(var i = 0; i < 8; ++i) {
+            if(bitStream.isEmpty()) return cc;
             cc = cc * 2 + bitStream.dequeue();
         }  
         return cc;
@@ -197,7 +198,7 @@ var jsscompress = jsscompress || {};
             cc = Math.floor(cc / 2);
         }  
         
-        for(var i = 7; i >= 0; --i){
+        for(var i = temp.length-1; i >= 0; --i){
             var bit = temp[i];
             bitStream.enqueue(bit);
         }
@@ -263,7 +264,7 @@ var jsscompress = jsscompress || {};
         this.buildCode(x.right, s + "1", code);
     };
     
-    Hauffman.prototype.compress = function(text) {
+    Hauffman.prototype.compressToBinary = function(text) {
         var trie = this.buildTrie(text);
         var code = {};
         this.buildCode(trie, "", code);
@@ -279,6 +280,41 @@ var jsscompress = jsscompress || {};
         }
         
         return bitStream;
+    };
+    
+    Hauffman.prototype.compress = function(text) {
+        var bitStream = this.compressToBinary(text);
+        var result = "";
+        while(!bitStream.isEmpty()){
+            var cc = this.readChar(bitStream);
+            result = result + String.fromCharCode(cc);
+        }
+        return result;
+    };
+    
+    Hauffman.prototype.decompressFromBinary = function(bitStream) {
+        var trie = this.readTrie(bitStream);
+        var code = {};
+        this.buildCode(trie, "", code);
+        var rcode = {};
+        for(var cc in code){
+            rcode[code[cc]] = cc;
+        }
+        var text = "";
+        var key = "";
+        while(!bitStream.isEmpty()){
+            var bit = bitStream.dequeue();
+            if(bit == 0) {
+                key = key + "0";
+            } else {
+                key = key + "1";
+            }
+            if(key in rcode) {
+                text = text + String.fromCharCode(rcode[key]);
+                key = "";
+            }
+        }
+        return text;
     };
     
     jss.Hauffman = Hauffman;
