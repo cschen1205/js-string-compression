@@ -263,6 +263,24 @@ var jsscompress = jsscompress || {};
         this.buildCode(x.right, s + "1", code);
     };
     
+    Hauffman.prototype.compress = function(text) {
+        var trie = this.buildTrie(text);
+        var code = {};
+        this.buildCode(trie, "", code);
+        var bitStream = new jss.Queue();
+        this.writeTrie(trie, bitStream);
+        for(var i=0; i < text.length; ++i) {
+            var s = text.charCodeAt(i);
+            var cc = code[s];
+            for(var j = 0; j < cc.length; ++j) {
+                var bit = cc.charAt(j) == "0" ? 0 : 1;
+                bitStream.enqueue(bit);
+            }
+        }
+        
+        return bitStream;
+    };
+    
     jss.Hauffman = Hauffman;
 
 })(jsscompress);

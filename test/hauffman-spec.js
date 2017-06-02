@@ -21,5 +21,7 @@ describe("Hauffman algorithm", function(){
            expect(cc in code).to.equal(true);
            expect(code[cc]).to.equal(code2[cc]);
        }
+       
+       bitStream = hm.compress(text);
    }); 
 });
