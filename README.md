@@ -3,6 +3,10 @@ Package provides javascript for string compression
 
 [![Build Status](https://travis-ci.org/cschen1205/js-string-compression.svg?branch=master)](https://travis-ci.org/cschen1205/js-string-compression) [![Coverage Status](https://coveralls.io/repos/github/cschen1205/js-string-compression/badge.svg?branch=master)](https://coveralls.io/github/cschen1205/js-string-compression?branch=master) 
 
+# Install
+
+npm install js-string-compression
+
 # Usage
 
 
