@@ -1,6 +1,12 @@
 var jsscompress = jsscompress || {};
 
 (function(jss){
+    jss.exchange = function(a, i, j) {
+        var temp = a[i];
+        a[i]  = a[j];
+        a[j] = temp;
+    };
+    
     var HauffNode = function(config) {
         var config = config || {};
         if(!config.left) {
@@ -78,6 +84,86 @@ var jsscompress = jsscompress || {};
     };
     
     jss.Queue = Queue;
+    
+    var MinPQ = function(compare) {
+        this.s = [];
+        this.N = 0;
+        if(!compare) {
+            compare = function(a1, a2) {
+                return a1 - a2;
+            };
+        }
+        this.compare = compare;
+    };
+    
+    MinPQ.prototype.enqueue = function(item) {
+        if(this.N+1 >= this.s.length) {
+            this.resize(this.s.length * 2);
+        }
+        this.s[++this.N] = item;
+        this.swim(this.N);
+    };
+    
+    MinPQ.prototype.delMin = function() {
+        if(this.N == 0) {
+            return undefined;
+        }  
+        var item = this.s[1];
+        jss.exchange(this.s, 1, this.N--);
+        this.sink(1);
+        if(this.N == Math.floor(this.s.length / 4)){
+            this.resize(Math.floor(this.s.length / 2));
+        }
+        return item;
+    };
+    
+    MinPQ.prototype.sink = function(k) {
+        while(k * 2 <= this.N) {
+            var child = k * 2;
+            if(child < this.N && this.compare(this.s[child+1], this.s[child]) < 0){
+                child += 1;
+            }
+            if(this.compare(this.s[child], this.s[k]) < 0) {
+                jss.exchange(this.s, child, k);
+                k = child;
+            } else {
+                break;
+            }
+        }  
+    };
+    
+    MinPQ.prototype.size = function() {
+        return this.N;
+    };
+    
+    MinPQ.prototype.isEmpty = function() {
+        return this.N == 0;
+    };
+    
+    MinPQ.prototype.resize = function(len) {
+        var temp = [];
+        for(var i = 0; i < len; ++i) {
+            if(i < this.s.length){
+                temp.push(this.s[i]);
+            } else {
+                temp.push(0);
+            }
+        }
+        this.s = temp;
+    };
+    
+    MinPQ.prototype.swim = function(k) {
+        while(k > 1) {
+            parent = Math.floor(k / 2);
+            if(this.compare(this.s[k], this.s[parent]) < 0) {
+                jss.exchange(this.s, k, parent);
+                k = parent;
+            } else {
+                break;
+            }
+        }  
+    };
+    jss.MinPQ = MinPQ;
     
     Hauffman.prototype.readTrie = function(bitStream) {
         var bit = bitStream.dequeue();
